@@ -291,12 +291,19 @@ class PhishGuardApp {
     this.statusClassification.textContent = result.statusText;
     this.statusSubExplanation.textContent = result.threatSummary;
 
-    // 2. Verified Brand Trust Badge
+    // 2. Verified Brand or Trusted TLD Trust Badge
     if (result.brand) {
       this.verifiedTrustBadgeContainer.innerHTML = `
         <div class="verified-trust-badge">
           <span class="badge-icon">${result.brand.icon}</span>
           <span>${result.trustBadge} (${result.brand.category})</span>
+        </div>
+      `;
+    } else if (result.trustedTldInfo && result.safetyLevel === 'SAFE') {
+      this.verifiedTrustBadgeContainer.innerHTML = `
+        <div class="verified-trust-badge" style="background: rgba(0, 243, 255, 0.12); border-color: var(--neon-cyan); color: var(--neon-cyan);">
+          <span class="badge-icon">🏛️</span>
+          <span>${result.trustedTldInfo.badge} (.${result.domainParts.tld})</span>
         </div>
       `;
     } else if (result.impersonatedBrand) {
@@ -370,15 +377,17 @@ class PhishGuardApp {
     chips.push({
       lbl: 'ROOT DOMAIN',
       val: p.rootDomain,
-      state: result.brand ? 'chip-safe' : (result.impersonatedBrand ? 'chip-danger' : 'chip-neutral')
+      state: (result.brand || (result.trustedTldInfo && result.safetyLevel === 'SAFE')) ? 'chip-safe' : (result.impersonatedBrand ? 'chip-danger' : 'chip-neutral')
     });
 
     // TLD
     if (p.tld) {
+      const isHighAbuse = result.findings.some(f => f.rule === 'HIGH_ABUSE_CHEAP_TLD' || f.rule === 'HIGH_ABUSE_TLD_DETECTED');
+      const isSafeTld = result.trustedTldInfo && result.safetyLevel === 'SAFE';
       chips.push({
         lbl: 'TLD',
         val: `.${p.tld}`,
-        state: (result.findings.some(f => f.rule === 'HIGH_ABUSE_CHEAP_TLD' || f.rule === 'HIGH_ABUSE_TLD_DETECTED')) ? 'chip-danger' : 'chip-neutral'
+        state: isHighAbuse ? 'chip-danger' : (isSafeTld ? 'chip-safe' : 'chip-neutral')
       });
     }
 

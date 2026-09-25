@@ -376,8 +376,184 @@ export const TRUSTED_BRANDS = [
     ],
     targetKeywords: ['telegram', 'telegra', 'telegrarn', 'telegramgift'],
     trustBadge: 'VERIFIED TELEGRAM MESSAGING PIPELINE'
+  },
+  {
+    id: 'wikipedia',
+    name: 'Wikipedia & Wikimedia',
+    category: 'Public Knowledge & Non-Profit Encyclopedia',
+    icon: '📖',
+    color: '#006699',
+    accentColor: '#3366cc',
+    description: 'Global free encyclopedia and open educational infrastructure maintained by the Wikimedia Foundation',
+    officialDomains: [
+      'wikipedia.org',
+      'wikimedia.org',
+      'wikidata.org',
+      'wiktionary.org',
+      'wikibooks.org',
+      'wikiquote.org',
+      'wikisource.org',
+      'wikiversity.org',
+      'wikivoyage.org',
+      'wikinews.org',
+      'wikimediafoundation.org',
+      'mediawiki.org'
+    ],
+    targetKeywords: ['wikipedia', 'wikimedia', 'wikipedi', 'wikki'],
+    trustBadge: 'VERIFIED WIKIMEDIA PUBLIC FOUNDATION'
+  },
+  {
+    id: 'archive',
+    name: 'Internet Archive',
+    category: 'Digital Library & Public Archive',
+    icon: '🏛️',
+    color: '#333333',
+    accentColor: '#4682b4',
+    description: 'Non-profit digital library offering free universal access to books, movies, software, and the Wayback Machine',
+    officialDomains: [
+      'archive.org',
+      'openlibrary.org',
+      'waybackmachine.org'
+    ],
+    targetKeywords: ['archive.org', 'waybackmachine'],
+    trustBadge: 'VERIFIED INTERNET ARCHIVE FOUNDATION'
+  },
+  {
+    id: 'mozilla',
+    name: 'Mozilla Foundation',
+    category: 'Open-Source & Internet Standards',
+    icon: '🦊',
+    color: '#ff7139',
+    accentColor: '#000000',
+    description: 'Non-profit organization dedicated to keeping the Internet open, accessible, and secure for all',
+    officialDomains: [
+      'mozilla.org',
+      'firefox.com',
+      'mozilla.net',
+      'getfirefox.com'
+    ],
+    targetKeywords: ['mozilla', 'firefox'],
+    trustBadge: 'VERIFIED MOZILLA OPEN WEB FOUNDATION'
   }
 ];
+
+/**
+ * Categorized Trusted Top-Level Domains (TLDs) and official registry extensions.
+ * These extensions represent restricted regulatory authorities, accredited academic institutions,
+ * established public foundations, and recognized core internet registries.
+ */
+export const TRUSTED_TLD_TIERS = {
+  // Restricted Government and Military registries (strictly regulated, verified state/national ownership)
+  GOVERNMENT: {
+    category: 'Official Government & Sovereign Institution',
+    badge: 'VERIFIED OFFICIAL GOVERNMENT REGISTRY',
+    riskOffset: -40,
+    tlds: new Set([
+      'gov', 'mil', 'nic.in', 'gov.in', 'gov.uk', 'gov.au', 'gov.ca', 
+      'gov.sg', 'gov.za', 'gov.br', 'gov.mx', 'gov.tr', 'gov.my', 
+      'gc.ca', 'fed.us', 'state.gov', 'defense.gov', 'mil.in'
+    ]),
+    patterns: [
+      /^gov$/,
+      /^mil$/,
+      /^gov\.[a-z]{2}$/,
+      /^nic\.[a-z]{2}$/,
+      /^mil\.[a-z]{2}$/,
+      /^govt\.[a-z]{2}$/
+    ]
+  },
+
+  // Accredited Educational & Academic Institutions
+  EDUCATION: {
+    category: 'Accredited Educational & Academic Entity',
+    badge: 'AUTHENTICATED ACADEMIC / UNIVERSITY REGISTRY',
+    riskOffset: -35,
+    tlds: new Set([
+      'edu', 'ac', 'edu.in', 'ac.in', 'ac.uk', 'edu.au', 'ac.jp', 
+      'edu.sg', 'ac.nz', 'ac.za', 'edu.my', 'edu.ca', 'edu.tr', 'ac.kr'
+    ]),
+    patterns: [
+      /^edu$/,
+      /^ac$/,
+      /^edu\.[a-z]{2}$/,
+      /^ac\.[a-z]{2}$/
+    ]
+  },
+
+  // Legitimate Non-Profit Organizations, Public Foundations & Open Repositories
+  ORGANIZATION: {
+    category: 'Public Interest & Non-Profit Organization',
+    badge: 'RECOGNIZED NON-PROFIT / FOUNDATION TLD',
+    riskOffset: -25,
+    tlds: new Set([
+      'org', 'org.in', 'org.uk', 'org.au', 'org.za', 'org.br', 'org.mx', 'org.my', 'org.nz', 'org.sg', 'or.jp', 'org.tr'
+    ]),
+    patterns: [
+      /^org$/,
+      /^org\.[a-z]{2}$/,
+      /^or\.[a-z]{2}$/
+    ]
+  },
+
+  // Established Core Internet Infrastructure & Network Services
+  NETWORK: {
+    category: 'Core Internet & Network Infrastructure',
+    badge: 'ESTABLISHED NETWORK INFRASTRUCTURE TLD',
+    riskOffset: -20,
+    tlds: new Set([
+      'net', 'net.in', 'net.uk', 'net.au', 'net.za', 'net.br', 'net.my', 'net.nz', 'net.sg', 'ne.jp', 'net.tr'
+    ]),
+    patterns: [
+      /^net$/,
+      /^net\.[a-z]{2}$/,
+      /^ne\.[a-z]{2}$/
+    ]
+  },
+
+  // Intergovernmental Treaty Organizations
+  INTERNATIONAL: {
+    category: 'Intergovernmental Treaty Organization',
+    badge: 'VERIFIED INTERGOVERNMENTAL ENTITY',
+    riskOffset: -40,
+    tlds: new Set(['int']),
+    patterns: [
+      /^int$/
+    ]
+  }
+};
+
+/**
+ * Combined set of trusted TLDs for fast lookup
+ */
+export const TRUSTED_TLDS = new Set([
+  'org', 'gov', 'edu', 'net', 'mil', 'int',
+  'gov.in', 'gov.uk', 'gov.au', 'gov.ca', 'gov.sg', 'gov.za', 'gc.ca', 'fed.us',
+  'edu.in', 'edu.au', 'edu.sg', 'edu.ca', 'edu.my',
+  'ac.in', 'ac.uk', 'ac.jp', 'ac.nz', 'ac.za',
+  'org.in', 'org.uk', 'org.au', 'org.za', 'org.br', 'or.jp', 'org.sg',
+  'net.in', 'net.uk', 'net.au', 'net.za', 'ne.jp', 'net.sg',
+  'nic.in', 'mil.in'
+]);
+
+/**
+ * Checks whether a given TLD string matches any trusted TLD tier
+ */
+export function getTrustedTldInfo(tld) {
+  if (!tld) return null;
+  const cleanTld = tld.toLowerCase().trim();
+
+  for (const [key, tier] of Object.entries(TRUSTED_TLD_TIERS)) {
+    if (tier.tlds.has(cleanTld)) {
+      return { tierKey: key, ...tier };
+    }
+    for (const pattern of tier.patterns) {
+      if (pattern.test(cleanTld)) {
+        return { tierKey: key, ...tier };
+      }
+    }
+  }
+  return null;
+}
 
 /**
  * List of high-abuse top-level domains commonly exploited in mass phishing campaigns

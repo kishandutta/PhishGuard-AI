@@ -21,22 +21,27 @@ import {
   HIGH_ABUSE_TLDS, 
   KNOWN_URL_SHORTENERS, 
   SUSPICIOUS_LURE_WORDS, 
-  SUSPICIOUS_EXTENSIONS 
+  SUSPICIOUS_EXTENSIONS,
+  TRUSTED_TLD_TIERS,
+  TRUSTED_TLDS,
+  getTrustedTldInfo
 } from './whitelist.js';
 
 // Multi-part TLD suffixes commonly encountered
 const MULTI_PART_TLDS = new Set([
-  'co.in', 'com.in', 'net.in', 'org.in', 'gen.in', 'firm.in', 'ind.in',
-  'co.uk', 'gov.uk', 'ac.uk', 'org.uk', 'me.uk', 'ltd.uk',
+  'co.in', 'com.in', 'net.in', 'org.in', 'gen.in', 'firm.in', 'ind.in', 'nic.in', 'gov.in', 'edu.in', 'res.in', 'ac.in', 'mil.in',
+  'co.uk', 'gov.uk', 'ac.uk', 'org.uk', 'net.uk', 'me.uk', 'ltd.uk',
   'com.au', 'net.au', 'org.au', 'edu.au', 'gov.au',
-  'co.jp', 'ne.jp', 'or.jp', 'ac.jp',
-  'com.br', 'net.br', 'org.br',
-  'co.nz', 'net.nz', 'org.nz',
-  'co.za', 'net.za', 'org.za',
-  'com.sg', 'edu.sg',
-  'com.my', 'net.my', 'org.my',
-  'com.tr', 'net.tr',
-  'com.mx', 'org.mx'
+  'co.jp', 'ne.jp', 'or.jp', 'ac.jp', 'go.jp',
+  'com.br', 'net.br', 'org.br', 'gov.br',
+  'co.nz', 'net.nz', 'org.nz', 'govt.nz', 'ac.nz',
+  'co.za', 'net.za', 'org.za', 'gov.za', 'ac.za', 'edu.za',
+  'com.sg', 'edu.sg', 'gov.sg', 'org.sg', 'net.sg',
+  'com.my', 'net.my', 'org.my', 'gov.my', 'edu.my',
+  'com.tr', 'net.tr', 'org.tr', 'gov.tr', 'edu.tr',
+  'com.mx', 'org.mx', 'gob.mx', 'edu.mx',
+  'gc.ca', 'gov.ca', 'edu.ca',
+  'fed.us'
 ]);
 
 // Character substitution maps for homoglyphs / typosquats
@@ -150,7 +155,9 @@ export function parseDomainParts(hostname) {
 
   if (parts.length >= 3) {
     const candidate2Part = `${parts[parts.length - 2]}.${parts[parts.length - 1]}`;
-    if (MULTI_PART_TLDS.has(candidate2Part)) {
+    const isCc2Part = MULTI_PART_TLDS.has(candidate2Part) || 
+      /^(gov|edu|ac|mil|nic|org|net|co|com|or|ne|res|govt|gob|gc)\.[a-z]{2}$/.test(candidate2Part);
+    if (isCc2Part) {
       tld = candidate2Part;
       domainName = parts[parts.length - 3];
       rootDomain = `${domainName}.${tld}`;
@@ -268,6 +275,7 @@ export function analyzeLink(inputUrl) {
   const { hostname, pathname, search, protocol, username, password, port } = urlObj;
   const domainParts = parseDomainParts(hostname);
   const { rootDomain, subdomain, tld, domainName, isIp } = domainParts;
+  const trustedTldInfo = getTrustedTldInfo(tld);
 
   const findings = [];
   let riskScore = 0;
@@ -359,21 +367,43 @@ export function analyzeLink(inputUrl) {
   }
 
   // =========================================================================
-  // RULE 2: STRICT SCRUTINY FOR ALL UNKNOWN / THIRD-PARTY / UNVERIFIED DOMAINS
-  // Default to Suspicious / Unverified: NEVER assume safe.
+  // RULE 2: TLD & EXTENSION VALIDATION // TRUSTED TLDs (.org, .gov, .edu, .net, etc.)
   // =========================================================================
+  if (trustedTldInfo) {
+    let tldDesc = '';
+    if (trustedTldInfo.tierKey === 'GOVERNMENT' || trustedTldInfo.tierKey === 'INTERNATIONAL') {
+      tldDesc = `The destination domain uses the restricted ".${tld}" extension. This registry is strictly controlled by sovereign or international treaty authorities, requiring authenticated legal clearance.`;
+    } else if (trustedTldInfo.tierKey === 'EDUCATION') {
+      tldDesc = `The destination domain utilizes the authenticated academic TLD ".${tld}", restricted exclusively to verified universities, colleges, and accredited educational institutions.`;
+    } else if (trustedTldInfo.tierKey === 'ORGANIZATION') {
+      tldDesc = `The destination domain utilizes the recognized ".${tld}" top-level domain, widely established for legitimate non-profit foundations, open-source initiatives, public interest entities, and encyclopedias (e.g., Wikipedia).`;
+    } else {
+      // NETWORK
+      tldDesc = `The destination domain uses the established ".${tld}" top-level domain, an original core Internet infrastructure and networking registry with high global legitimacy.`;
+    }
 
-  // Initial base penalty for unverified third-party origin
-  let baseUnverifiedPenalty = 35;
-  findings.push({
-    category: 'Domain Reputation & Origin',
-    severity: 'MEDIUM',
-    rule: 'UNVERIFIED_THIRD_PARTY_DOMAIN',
-    title: 'Unverified Third-Party / Unknown Origin',
-    impact: baseUnverifiedPenalty,
-    description: `The domain "${rootDomain || hostname}" is NOT present in the verified global brand whitelist. Unverified third-party domains undergo strict heuristic inspection and are not trusted by default.`
-  });
-  riskScore += baseUnverifiedPenalty;
+    findings.push({
+      category: 'Domain Authority & Extension',
+      severity: 'SAFE',
+      rule: 'AUTHENTICATED_TLD_EXTENSION',
+      title: `${trustedTldInfo.badge} (.${tld})`,
+      impact: 0,
+      description: tldDesc
+    });
+    // Trusted TLDs incur 0 base penalty
+  } else {
+    // Unverified third-party domain: apply base heuristic scrutiny
+    let baseUnverifiedPenalty = 30;
+    findings.push({
+      category: 'Domain Reputation & Origin',
+      severity: 'MEDIUM',
+      rule: 'UNVERIFIED_THIRD_PARTY_DOMAIN',
+      title: 'Unverified Third-Party / Unknown Origin',
+      impact: baseUnverifiedPenalty,
+      description: `The domain "${rootDomain || hostname}" is NOT present in the verified brand whitelist nor does it utilize an authenticated public extension (.org, .gov, .edu, .net). Unverified third-party domains undergo strict heuristic inspection.`
+    });
+    riskScore += baseUnverifiedPenalty;
+  }
 
   // =========================================================================
   // RULE 3: CRITICAL TRIGGER - RAW IP ADDRESS NAVIGATION
@@ -505,18 +535,44 @@ export function analyzeLink(inputUrl) {
   }
 
   if (matchedLures.length > 0) {
-    // When deceptive keywords are on an unknown domain, high risk penalty
-    const lurePenalty = isRiskyTld || impersonatedBrand ? 45 : 35;
-    riskScore += lurePenalty;
+    const isGovOrEdu = trustedTldInfo && (trustedTldInfo.tierKey === 'GOVERNMENT' || trustedTldInfo.tierKey === 'EDUCATION' || trustedTldInfo.tierKey === 'INTERNATIONAL');
+    const isCleanOrgOrNet = trustedTldInfo && (trustedTldInfo.tierKey === 'ORGANIZATION' || trustedTldInfo.tierKey === 'NETWORK') && !impersonatedBrand && !isRiskyTld;
+    const domainNameHasLure = matchedLures.some(lure => domainName.includes(lure));
 
-    findings.push({
-      category: 'Social Engineering & Credential Harvesting',
-      severity: isRiskyTld || impersonatedBrand ? 'CRITICAL' : 'HIGH',
-      rule: 'DECEPTIVE_LURE_KEYWORDS',
-      title: `Deceptive Lure Tokens Detected: [${matchedLures.slice(0, 5).join(', ')}]`,
-      impact: lurePenalty,
-      description: `URL contains deceptive call-to-action tokens (${matchedLures.slice(0, 5).join(', ')}). Combining sensitive keywords (authentication, financial rewards, urgency) with an unverified third-party domain is a primary indicator of phishing or fraud.`
-    });
+    if (isGovOrEdu && !impersonatedBrand) {
+      // Official government & academic portals legitimately host authentication / service endpoints
+      findings.push({
+        category: 'Service Endpoint & Authority',
+        severity: 'SAFE',
+        rule: 'AUTHENTICATED_PORTAL_ENDPOINT',
+        title: `Official Portal Functional Endpoint [${matchedLures.slice(0, 3).join(', ')}]`,
+        impact: 0,
+        description: `URL path contains standard authentication or administrative tokens (${matchedLures.slice(0, 3).join(', ')}). Because the destination is an authenticated .${tld} institution with no brand spoofing, these tokens represent legitimate administrative functionality.`
+      });
+    } else if (isCleanOrgOrNet && !domainNameHasLure) {
+      // Informational / community content (e.g. Wikipedia articles, foundation support/account portals)
+      findings.push({
+        category: 'Navigation & Content',
+        severity: 'SAFE',
+        rule: 'LEGITIMATE_ORGANIZATION_ENDPOINT',
+        title: `Informational / Community Action Token [${matchedLures.slice(0, 3).join(', ')}]`,
+        impact: 0,
+        description: `Path includes token (${matchedLures.slice(0, 3).join(', ')}). On a recognized .${tld} domain with zero brand manipulation, this is standard informational, educational, or portal routing.`
+      });
+    } else {
+      // Unverified domain, high-risk TLD, or brand spoofing with lure keywords
+      const lurePenalty = isRiskyTld || impersonatedBrand ? 45 : 35;
+      riskScore += lurePenalty;
+
+      findings.push({
+        category: 'Social Engineering & Credential Harvesting',
+        severity: isRiskyTld || impersonatedBrand ? 'CRITICAL' : 'HIGH',
+        rule: 'DECEPTIVE_LURE_KEYWORDS',
+        title: `Deceptive Lure Tokens Detected: [${matchedLures.slice(0, 5).join(', ')}]`,
+        impact: lurePenalty,
+        description: `URL contains deceptive call-to-action tokens (${matchedLures.slice(0, 5).join(', ')}). Combining sensitive keywords (authentication, financial rewards, urgency) with an unverified third-party domain is a primary indicator of phishing or fraud.`
+      });
+    }
   }
 
   // =========================================================================
@@ -628,7 +684,7 @@ export function analyzeLink(inputUrl) {
     });
   }
 
-  // Plain Insecure HTTP
+  // Plain Insecure HTTP vs Secure HTTPS
   if (protocol === 'http') {
     riskScore += 15;
     findings.push({
@@ -638,6 +694,15 @@ export function analyzeLink(inputUrl) {
       title: 'Insecure Cleartext Protocol (HTTP)',
       impact: 15,
       description: 'The link transmits data via unencrypted HTTP. Any credentials or personal data transmitted can be intercepted or manipulated via Man-In-The-Middle (MITM) attacks.'
+    });
+  } else if (protocol === 'https') {
+    findings.push({
+      category: 'Protocol & Encryption',
+      severity: 'SAFE',
+      rule: 'SECURE_TLS_TRANSPORT',
+      title: 'Modern TLS/HTTPS Transport',
+      impact: 0,
+      description: 'Connection uses secure cryptographic transport (HTTPS) ensuring confidentiality and anti-tampering.'
     });
   }
 
@@ -659,11 +724,31 @@ export function analyzeLink(inputUrl) {
     status = 'SUSPICIOUS';
     statusText = 'SUSPICIOUS // ELEVATED THREAT LEVEL';
     safetyLevel = 'WARNING';
+  } else if (riskScore > 0) {
+    if (trustedTldInfo && !impersonatedBrand) {
+      status = 'SAFE_LEGITIMATE';
+      statusText = `SAFE // VERIFIED .${tld.toUpperCase()} DOMAIN`;
+      safetyLevel = 'SAFE';
+    } else {
+      status = 'UNVERIFIED_THIRD_PARTY';
+      statusText = 'UNVERIFIED THIRD-PARTY DOMAIN';
+      safetyLevel = 'CAUTION';
+    }
   } else {
-    // Under 40%: unknown domain with minimal extra threat vectors
-    status = 'UNVERIFIED_THIRD_PARTY';
-    statusText = 'UNVERIFIED THIRD-PARTY DOMAIN';
-    safetyLevel = 'CAUTION';
+    // 0% Risk Score
+    if (whitelistCheck.isWhitelisted) {
+      status = 'VERIFIED_TRUSTED';
+      statusText = '100% Safe (Verified Brand Platform)';
+      safetyLevel = 'SAFE';
+    } else if (trustedTldInfo) {
+      status = 'VERIFIED_LEGITIMATE_TLD';
+      statusText = `100% Safe (${trustedTldInfo.badge})`;
+      safetyLevel = 'SAFE';
+    } else {
+      status = 'SAFE';
+      statusText = '100% Safe (Legitimate Clean Domain)';
+      safetyLevel = 'SAFE';
+    }
   }
 
   const scanDuration = Math.round(performance.now() - startTime);
@@ -673,8 +758,17 @@ export function analyzeLink(inputUrl) {
     threatSummary = `CRITICAL THREAT (Risk: ${riskScore}%): High probability of phishing or brand impersonation${impersonatedBrand ? ` targeting ${impersonatedBrand.name}` : ''}. DO NOT submit credentials or personal information.`;
   } else if (safetyLevel === 'WARNING') {
     threatSummary = `SUSPICIOUS DOMAIN (Risk: ${riskScore}%): Multiple security threat vectors detected (unverified domain, suspicious TLD, or deceptive keywords). Exercise extreme caution.`;
+  } else if (safetyLevel === 'CAUTION') {
+    threatSummary = `UNVERIFIED DOMAIN (Risk: ${riskScore}%): Domain is not in the trusted brand registry nor recognized public TLD. Proceed with caution.`;
   } else {
-    threatSummary = `UNVERIFIED DOMAIN (Risk: ${riskScore}%): Domain is not in the trusted brand registry. Proceed with caution.`;
+    // SAFE
+    if (whitelistCheck.isWhitelisted) {
+      threatSummary = `Verified authentic digital asset of ${whitelistCheck.brand.name}. Authenticated against global trusted database.`;
+    } else if (trustedTldInfo) {
+      threatSummary = `Verified authentic legitimate domain utilizing official ${trustedTldInfo.category} (.${tld}). Zero threat vectors detected.`;
+    } else {
+      threatSummary = `Clean domain with valid TLS encryption and no detected phishing or spoofing vectors.`;
+    }
   }
 
   return {
@@ -686,6 +780,11 @@ export function analyzeLink(inputUrl) {
     statusText,
     riskScore,
     safetyLevel,
+    trustedTldInfo: trustedTldInfo ? {
+      tierKey: trustedTldInfo.tierKey,
+      category: trustedTldInfo.category,
+      badge: trustedTldInfo.badge
+    } : null,
     impersonatedBrand: impersonatedBrand ? {
       name: impersonatedBrand.name,
       icon: impersonatedBrand.icon,

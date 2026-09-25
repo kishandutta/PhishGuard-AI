@@ -21,8 +21,16 @@ An advanced, intelligent **Cybersecurity Phishing Link Detector** with a futuris
   - **GitHub** (`github.com`, `github.io`, `github.blog`)
   - **LinkedIn** (`linkedin.com`, `lnkd.in`, `licdn.com`)
   - **Microsoft** (`microsoft.com`, `live.com`, `office.com`, `outlook.com`, `azure.com`, `windows.net`, etc.)
-  - Plus **Apple**, **PayPal**, **Spotify**, **Reddit**, **Discord**, **Telegram**.
-- **Instant 100% Safe Classification**: Genuine variations and exact matches of official domains bypass false positives and receive a **Verified Enterprise Trust Badge** with category and green HUD certificate.
+  - **Wikipedia & Wikimedia Foundation** (`wikipedia.org`, `wikimedia.org`, `wikidata.org`, `wiktionary.org`, etc.)
+  - Plus **Internet Archive**, **Mozilla**, **Apple**, **PayPal**, **Spotify**, **Reddit**, **Discord**, **Telegram**.
+- **Official Top-Level Domain (TLD) & Extension Recognition**:
+  - Automatically recognizes and validates official, restricted, and public interest extensions to eliminate false positives:
+    - **Government & Sovereign Entities**: `.gov`, `.mil`, `.gov.in`, `.nic.in`, `.gov.uk`, `.gov.au`, `.gov.ca`, etc.
+    - **Accredited Academic & Education**: `.edu`, `.ac`, `.edu.in`, `.ac.in`, `.ac.uk`, `.edu.au`, etc.
+    - **Non-Profit Foundations & Encyclopedias**: `.org`, `.org.in`, `.org.uk`, `.org.au`, etc.
+    - **Core Internet & Network Services**: `.net`, `.net.in`, `.net.uk`, `.net.au`, etc.
+    - **Intergovernmental Treaty Organizations**: `.int` (UN, WHO, etc.).
+- **Instant 100% Safe Classification**: Genuine variations, exact matches of official domains, and authenticated public TLDs bypass false positives and receive a **Verified Enterprise / Registry Trust Badge** with category and green HUD certificate.
 
 ### 2. 🧠 Advanced Threat Intelligence Engine (Heuristics)
 - **Typosquatting & Lookalike Detection**:
@@ -84,6 +92,8 @@ Try clicking any of the preset simulation chips on the interface:
 - **Official Amazon India**: `https://www.amazon.in/dp/B0CX21P5H2` -> `100% Safe (Verified Brand Platform)`
 - **Google Accounts**: `https://accounts.google.com/signin/v2/identifier` -> `100% Safe (Verified Brand Platform)`
 - **Official Myntra**: `https://www.myntra.com/men-casual-shirts` -> `100% Safe (Verified Brand Platform)`
+- **Wikipedia (.org)**: `https://en.wikipedia.org/wiki/Cybersecurity` -> `100% Safe (Verified Wikimedia Public Foundation)`
+- **NASA (.gov)**: `https://www.nasa.gov/missions` -> `100% Safe (Verified Official Government Registry)`
 - **Flipkart Phishing Clone**: `http://flipkart-login-update.co/claim-reward` -> `100% Risk - Dangerous Phishing Hazard`
 - **Amazon Typosquat**: `https://amzn-security.com/verify-account` -> `95% Risk - Dangerous Phishing Hazard`
 - **Google Homoglyph**: `https://g00gle-verify.net/accounts/signin` -> `95% Risk - Dangerous Phishing Hazard`

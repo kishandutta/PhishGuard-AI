@@ -40,7 +40,7 @@ export class HistoryManager {
       safetyLevel: scanResult.safetyLevel,
       status: scanResult.status,
       statusText: scanResult.statusText,
-      brandName: scanResult.brand ? scanResult.brand.name : (scanResult.impersonatedBrand ? scanResult.impersonatedBrand.name : null),
+      brandName: scanResult.brand ? scanResult.brand.name : (scanResult.impersonatedBrand ? scanResult.impersonatedBrand.name : (scanResult.trustedTldInfo ? `.${scanResult.domainParts.tld} (${scanResult.trustedTldInfo.category})` : null)),
       findingsCount: scanResult.findings.length
     };
 
@@ -90,6 +90,9 @@ export class HistoryManager {
 
     if (scanResult.brand) {
       report += `Verified Brand:  ${scanResult.brand.name} (${scanResult.trustBadge})\n`;
+    }
+    if (scanResult.trustedTldInfo) {
+      report += `Trusted Registry: .${scanResult.domainParts.tld} (${scanResult.trustedTldInfo.badge})\n`;
     }
     if (scanResult.impersonatedBrand) {
       report += `Impersonation:   Targeting ${scanResult.impersonatedBrand.name}\n`;
