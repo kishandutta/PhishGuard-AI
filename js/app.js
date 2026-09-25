@@ -432,7 +432,7 @@ class PhishGuardApp {
         impactText = `+${f.impact}% RISK`;
       } else if (f.impact < 0) {
         impactClass = 'impact-neg';
-        impactText = `VERIFIED TRUST (-100%)`;
+        impactText = `VERIFIED TRUST (+${Math.abs(f.impact)}%)`;
       }
 
       return `
