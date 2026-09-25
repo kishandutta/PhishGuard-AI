@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PhishGuard AI // Advanced Cyber Threat Intelligence & Phishing Link Detector</title>
+  <meta name="description" content="Futuristic Cyberpunk Phishing Link Detector with intelligent brand whitelist recognition, typosquatting detection, homoglyph analysis, raw IP detection, and risk scoring.">
+  <link rel="stylesheet" href="css/cyberpunk.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+</head>
+<body>
+  <!-- Animated Cyber Background Canvas -->
+  <canvas id="cyberCanvas"></canvas>
+  <div class="scanlines-overlay"></div>
+
+  <!-- Main Cyber Application -->
+  <div class="cyber-app">
+    <!-- Header & HUD Telemetry Bar -->
+    <header class="cyber-header" id="mainHeader">
+      <div class="brand-section">
+        <div class="brand-logo-hex" id="logoHex">
+          <span>🛡️</span>
+        </div>
+        <div class="brand-title">
+          <h1>PHISHGUARD // AI</h1>
+          <div class="tagline">CYBER THREAT INTELLIGENCE & HEURISTIC ENGINE v4.9.2</div>
+        </div>
+      </div>
+
+      <div class="telemetry-bar">
+        <div class="telemetry-pill" title="Live Heuristic Engine Active">
+          <span class="live-indicator"></span>
+          <span>HEURISTIC AI: ONLINE</span>
+        </div>
+
+        <button class="hud-btn" id="btnOpenWhitelist" title="View pre-programmed trusted brand database">
+          <span>🏛️</span>
+          <span>TRUST REGISTRY</span>
+        </button>
+
+        <button class="hud-btn" id="btnToggleAudio" title="Toggle Synthesized Cyber Audio Telemetry">
+          <span id="audioIcon">🔊</span>
+          <span id="audioText">AUDIO: ON</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Scanner Input Console -->
+    <section class="terminal-panel" id="inputTerminal">
+      <div class="panel-header">
+        <div class="panel-title">TARGET URL INGESTION CONSOLE</div>
+        <div class="panel-status-code">[CHANNEL: SEC_SCAN_01]</div>
+      </div>
+
+      <!-- URL Input Box -->
+      <form id="scanForm" onsubmit="return false;">
+        <div class="url-input-box">
+          <div class="input-prefix-icon">
+            <span>&gt;_</span>
+          </div>
+          <input 
+            type="text" 
+            id="urlInput" 
+            class="url-text-input" 
+            placeholder="Paste or enter suspicious target URL (e.g. flipkart-login-update.co, amazon.in)..." 
+            autocomplete="off"
+            spellcheck="false"
+          >
+          <div class="input-actions">
+            <button type="button" class="action-btn-subtle" id="btnPasteUrl" title="Paste from clipboard">
+              📋 PASTE
+            </button>
+            <button type="button" class="action-btn-subtle" id="btnClearUrl" title="Clear input">
+              ✖ CLEAR
+            </button>
+            <button type="submit" class="btn-cyber-scan" id="btnScan">
+              <span>SCAN LINK</span>
+              <span>⚡</span>
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!-- Preset Test Lures -->
+      <div class="presets-section">
+        <div class="presets-label">QUICK TEST SIMULATIONS & BENCHMARKS:</div>
+        <div class="presets-grid" id="presetsGrid">
+          <button type="button" class="preset-chip chip-safe" data-url="https://www.flipkart.com/offers-store">
+            <span>🛍️</span> Flipkart (Legitimate)
+          </button>
+          <button type="button" class="preset-chip chip-safe" data-url="https://www.amazon.in/dp/B0CX21P5H2">
+            <span>📦</span> Amazon India (Official)
+          </button>
+          <button type="button" class="preset-chip chip-safe" data-url="https://accounts.google.com/signin/v2/identifier">
+            <span>🌐</span> Google Accounts (Verified)
+          </button>
+          <button type="button" class="preset-chip chip-safe" data-url="https://www.myntra.com/men-casual-shirts">
+            <span>👗</span> Myntra Store (Official)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Real-time Scanning HUD Overlay -->
+    <section class="scanning-hud" id="scanningHud">
+      <div class="scan-radar-wrapper">
+        <div class="radar-scope">
+          <div class="radar-sweep-beam"></div>
+          <div class="radar-crosshair"></div>
+        </div>
+        <div class="scan-progress-info">
+          <div class="scan-stage-title" id="scanStageTitle">INITIALIZING HEURISTIC SENSORS...</div>
+          <div class="scan-terminal-log" id="scanTerminalLog">&gt; INGESTING TARGET & PARSING PROTOCOL HIERARCHY...</div>
+          <div class="cyber-progress-track">
+            <div class="cyber-progress-fill" id="scanProgressBar"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Analysis Results Dashboard -->
+    <main class="results-dashboard" id="resultsDashboard">
+      <!-- Main Clearance Banner -->
+      <section class="clearance-banner state-safe" id="clearanceBanner">
+        <div class="status-badge-container">
+          <div class="status-symbol-shield" id="statusShield">🛡️</div>
+          <div>
+            <div class="status-classification" id="statusClassification">100% SAFE // VERIFIED TRUSTED</div>
+            <div class="status-sub-explanation" id="statusSubExplanation">
+              Target domain validated against pre-programmed cryptographic whitelist database.
+            </div>
+            <div id="verifiedTrustBadgeContainer">
+              <!-- Rendered if brand verified -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Radial Risk Score Dial Meter -->
+        <div class="score-meter-box">
+          <div class="dial-svg-wrapper">
+            <svg class="dial-svg" width="100" height="100" viewBox="0 0 100 100">
+              <circle class="dial-circle-bg" cx="50" cy="50" r="42"></circle>
+              <circle class="dial-circle-fill" id="dialCircleFill" cx="50" cy="50" r="42" stroke-dasharray="264" stroke-dashoffset="264"></circle>
+            </svg>
+            <div class="dial-center-text">
+              <div class="dial-score-num" id="dialScoreNum">0%</div>
+              <div class="dial-score-lbl">RISK SCORE</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- URL Anatomy Inspector -->
+      <section class="anatomy-card" id="anatomyCard">
+        <div class="anatomy-header">
+          <div class="anatomy-title">DECONSTRUCTED URL ANATOMY INSPECTOR</div>
+          <div class="panel-status-code" id="anatomyScanTime">EXECUTION: 12ms</div>
+        </div>
+        <div class="anatomy-chips-row" id="anatomyChipsRow">
+          <!-- Filled dynamically -->
+        </div>
+      </section>
+
+      <!-- Threat Findings Log -->
+      <section class="findings-container" id="findingsContainer">
+        <div class="findings-header">
+          <div class="findings-title">THREAT INTELLIGENCE AUDIT FINDINGS</div>
+          <div class="panel-status-code" id="findingsCounter">0 ISSUES DETECTED</div>
+        </div>
+
+        <div class="findings-list" id="findingsList">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Report Export Actions -->
+        <div class="report-actions">
+          <button type="button" class="action-btn-subtle" id="btnCopyReport">
+            📋 COPY SECURITY AUDIT
+          </button>
+          <button type="button" class="action-btn-subtle" id="btnDownloadJson">
+            💾 EXPORT JSON REPORT
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <!-- Recent Scans History Section -->
+    <section class="history-section" id="historySection">
+      <div class="history-header">
+        <div class="history-title">RECENT THREAT SCANS TELEMETRY</div>
+        <button type="button" class="action-btn-subtle" id="btnClearHistory">
+          🗑️ CLEAR LOGS
+        </button>
+      </div>
+
+      <div class="history-table-container">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>TIMESTAMP</th>
+              <th>TARGET URL</th>
+              <th>BRAND / DOMAIN</th>
+              <th>RISK SCORE</th>
+              <th>SAFETY STATUS</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- Populated dynamically -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- Whitelist Explorer Modal -->
+  <div class="cyber-modal" id="whitelistModal">
+    <div class="modal-content-box">
+      <div class="modal-top-bar">
+        <div class="modal-title">
+          <span>🏛️</span>
+          <span>PRE-PROGRAMMED TRUSTED BRAND REGISTRY</span>
+        </div>
+        <button type="button" class="modal-close-btn" id="btnCloseWhitelist">✕</button>
+      </div>
+      <div class="modal-body-scroll">
+        <p style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-secondary);">
+          Official platforms pre-authorized as 100% Safe. Exact domains and official subdomains are authenticated with a Verified Trust Badge. Typosquats mimicking these brands are flagged with critical priority.
+        </p>
+
+        <input 
+          type="text" 
+          id="whitelistSearchInput" 
+          class="whitelist-search-input" 
+          placeholder="Filter brands (e.g. Flipkart, Amazon, Google, WhatsApp)..."
+        >
+
+        <div class="brands-directory-grid" id="brandsDirectoryGrid">
+          <!-- Populated dynamically from whitelist.js -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic Modules -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

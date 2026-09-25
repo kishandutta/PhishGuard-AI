@@ -1,0 +1,21 @@
+{
+  "name": "phishguard-ai",
+  "version": "1.0.0",
+  "description": "Futuristic Cyberpunk Phishing Link Detector & Threat Intelligence Engine",
+  "type": "module",
+  "main": "index.html",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "cybersecurity",
+    "phishing-detector",
+    "threat-intelligence",
+    "cyberpunk",
+    "anti-phishing",
+    "heuristics"
+  ],
+  "author": "PhishGuard AI Systems",
+  "license": "MIT"
+}
